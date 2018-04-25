@@ -1,49 +1,10 @@
-import numpy as np
 import math
 import random
 
-import matplotlib.pyplot as plt
+import numpy as np
 from numpy import linalg
 
 
-def leastSquareCircle(x, y):
-	#! python
-	# == METHOD 1 ==
-	method_1 = 'algebraic'
-
-	# coordinates of the barycenter
-	x_m = np.mean(x)
-	y_m = np.mean(y)
-
-	# calculation of the reduced coordinates
-	u = x - x_m
-	v = y - y_m
-
-	# linear system defining the center (uc, vc) in reduced coordinates:
-	#    Suu * uc +  Suv * vc = (Suuu + Suvv)/2
-	#    Suv * uc +  Svv * vc = (Suuv + Svvv)/2
-	Suv  = np.sum(u*v)
-	Suu  = np.sum(u**2)
-	Svv  = np.sum(v**2)
-	Suuv = np.sum(u**2 * v)
-	Suvv = np.sum(u * v**2)
-	Suuu = np.sum(u**3)
-	Svvv = np.sum(v**3)
-
-	# Solving the linear system
-	A = np.array([ [ Suu, Suv ], [Suv, Svv]])
-	B = np.array([ Suuu + Suvv, Svvv + Suuv ])/2.0
-	uc, vc = linalg.solve(A, B)
-
-	xc_1 = x_m + uc
-	yc_1 = y_m + vc
-
-	# Calcul des distances au centre (xc_1, yc_1)
-	Ri_1     = np.sqrt((x-xc_1)**2 + (y-yc_1)**2)
-	print (Ri_1, 'ris one')
-	R_1      = np.mean(Ri_1)
-	residu_1 = np.sum((Ri_1-R_1)**2)
-	return (xc_1, yc_1), R_1
 
 epsilon = 1e-6
 class Point():
@@ -145,12 +106,6 @@ class MaximumInscribledCircle():
 		newCenter = Vector(tmpVector.fromPoint, tmpVector.toPoint).setNorm(newNorm).toPoint
 		return newCenter
 
-	def verifyRadius(self):
-		x = [self.first.x, self.second.x, self.third.x]
-		y = [self.first.y, self.second.y, self.third.y]
-		center, radius = leastSquareCircle(x, y)
-		return (center, radius)
-
 	def getCenter(self):
 		originalPoint = Point(0, 0)
 		firstNorm = self.first.x * self.first.x + self.first.y * self.first.y
@@ -164,7 +119,7 @@ class MaximumInscribledCircle():
 		coefficient = np.array([[xdelta1, ydelta1], [xdelta2, ydelta2]])
 		ordinate = np.array([firstNorm - secondNorm, thirdNorm - secondNorm]) 
 		center = linalg.solve(coefficient, ordinate)
-		print(np.dot(coefficient, center) == ordinate)
+
 		return center
 	def getThirdPoint(self, points):
 		lineVector = Vector(self.first, self.second)
@@ -215,7 +170,6 @@ class MaximumInscribledCircle():
 		return points[np.argmin(dist)]
 
 	def verifyAngle(self):
-		print ('center in linalg', self.getCenter())
 		if Vector(self.first, self.second).dotProduct(Vector(self.first, self.third)) < epsilon:
 			return -1
 		if Vector(self.second, self.first).dotProduct(Vector(self.second, self.third)) < epsilon :
@@ -234,12 +188,9 @@ class MaximumInscribledCircle():
 			(self.first.y + self.second.y) / 2)
 		self.directionVector = Vector(middle, self.center)
 		self.getThirdPoint(points)
-		self.verifyRadius()
 		code = self.verifyAngle()
 		while code != 0:
-			print ('code ', code)
 			self.center = self.getCenter()
-			print ('center in least square circle', self.center)
 			self.center = listToPoint(self.center)
 			if code == -1:
 				self.first = self.third
@@ -261,7 +212,7 @@ def testFunc():
 	points = PointsInCircum(200)
 	circle = MaximumInscribledCircle(points)
 	print (circle.getRadius(), 'max radius')
-	print (circle.first, circle.second, circle.third)
+	# print (circle.first, circle.second, circle.third)
 
 
 
